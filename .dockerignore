@@ -1,0 +1,11 @@
+.venv
+.run
+.git
+.ruff_cache
+.pytest_cache
+**/__pycache__
+*.egg-info
+web/node_modules
+web/dist
+docs
+tests

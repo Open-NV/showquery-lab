@@ -1,0 +1,9 @@
+# Static osqueryd flags for showquery. Paths and --enable_tables are passed by
+# scripts/stack.sh (the table allowlist is generated from showquery.catalog).
+--ephemeral
+--disable_events
+--disable_logging
+--disable_watchdog
+--config_path=/dev/null
+--extensions_timeout=10
+--extensions_interval=1

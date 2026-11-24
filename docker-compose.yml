@@ -1,0 +1,28 @@
+# docker compose up -d --build   →   http://127.0.0.1:8088
+services:
+  mongo:
+    image: mongo:8
+    restart: unless-stopped
+    volumes:
+      - mongo-data:/data/db
+    healthcheck:
+      test: ["CMD", "mongosh", "--quiet", "--eval", "db.adminCommand('ping').ok"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+
+  showquery:
+    build: .
+    restart: unless-stopped
+    depends_on:
+      mongo:
+        condition: service_healthy
+    environment:
+      SHOWQUERY_MONGO_URI: mongodb://mongo:27017
+      SHOWQUERY_SEED_IF_EMPTY: "1"   # load 30 days of synthetic data on first start
+      SHOWQUERY_SEED_DAYS: "30"
+    ports:
+      - "127.0.0.1:${SHOWQUERY_PORT:-8088}:8000"   # localhost only: there is no auth yet
+
+volumes:
+  mongo-data:
