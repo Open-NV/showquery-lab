@@ -39,6 +39,31 @@ Every table also has `device, site, role, platform, mgmt_ip, collected_date,
 collected_at`. Example queries for each table are in the catalog and appear in the
 SQL editor's "Start from an example" menu.
 
+### Example: joining two tables
+
+This query finds every BGP session that wasn't up on a given day, alongside the
+device's OS version and uptime that same day. That shows whether an outage lines
+up with a reboot or an upgrade:
+
+```sql
+SELECT b.collected_date, b.device, b.neighbor, b.state,
+       v.os_version, v.uptime_seconds / 3600 AS device_uptime_hours
+FROM bgp_neighbors AS b
+JOIN device_versions AS v
+  ON v.device = b.device
+ AND v.collected_date = b.collected_date
+WHERE b.state != 'Established'
+ORDER BY b.collected_date DESC, b.device;
+```
+
+* Join on both `device` and `collected_date`. Each row is one device on one day, so
+  joining on `device` alone pairs every BGP row with every day's `show version`.
+* `state != 'Established'` is passed through to MongoDB, so only down sessions are
+  read from the BGP side.
+* In the synthetic data, a session down while the device has been up for thousands
+  of hours points at the peering itself. A session down on a device with low uptime
+  on a new image points at an upgrade.
+
 ## Running it with Docker (quickest)
 
 ```bash
